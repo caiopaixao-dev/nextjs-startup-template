@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transportadora {
+  id        Int        @id @default(autoincrement())
+  nome      String
+  cnpj      String     @unique
+  email     String
+  telefone  String
+  contato   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  documents Document[]
+}
+
+model Document {
+  id               Int           @id @default(autoincrement())
+  type             String
+  fileUrl          String
+  expiryDate       DateTime?
+  documentNumber   String?       // For licenses, permits, etc.
+  issuingAuthority String?      // For official documents
+  observations     String?       // Additional notes
+  status          String        @default("pending")
+  transportadoraId Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  transportadora  Transportadora @relation(fields: [transportadoraId], references: [id])
+
+  @@index([type])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+enum DocumentType {
+  DOC_SOCIETARIO
+  COMPROVANTE_ENDERECO
+  DOCS_SOCIOS
+  SEGURO_RCF_DC
+  SEGURO_RCTR_C
+  SEGURO_AMBIENTAL
+  PGR
+  PAE
+  AATIPP
+  CR_IBAMA
+  LICENCA_AMBIENTAL
+  ALVARA
+  ANTT_PJ
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   // 'transportadora' ou 'interno'
+  createdAt DateTime @default(now())
+}
