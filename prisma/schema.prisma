@@ -27,7 +27,7 @@ model Document {
   documentNumber   String?       // For licenses, permits, etc.
   issuingAuthority String?      // For official documents
   observations     String?       // Additional notes
-  status          String        @default("pending")
+  status          DocumentStatus @default(PENDING)
   transportadoraId Int
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -36,6 +36,13 @@ model Document {
   @@index([type])
   @@index([status])
   @@index([expiryDate])
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  EXPIRED
+  EXPIRING_SOON
 }
 
 enum DocumentType {
