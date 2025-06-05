@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Site Unificado</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    h1, h2 {
+      font-weight: 700;
+    }
+    a {
+      color: #fff;
+      text-decoration: underline;
+    }
+    a:hover {
+      color: #ccc;
+    }
+    .section {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background-color: #111;
+    }
+    button {
+      background-color: #fff;
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #ccc;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background-color: #222;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-3xl mb-6">Site Unificado</h1>
+
+    <section class="section" id="upload-section">
+      <h2 class="text-2xl mb-4">Upload de Arquivos</h2>
+      <input type="file" id="fileInput" multiple />
+      <button onclick="uploadFiles()">Enviar</button>
+      <div id="uploadStatus" class="mt-2"></div>
+    </section>
+
+    <section class="section" id="google-sheets-section">
+      <h2 class="text-2xl mb-4">Sincronizar Google Sheets</h2>
+      <button onclick="syncGoogleSheets()">Sincronizar</button>
+      <div id="syncStatus" class="mt-2"></div>
+    </section>
+
+    <section class="section" id="dashboard-section">
+      <h2 class="text-2xl mb-4">Dashboard</h2>
+      <div id="dashboardStats">Carregando estatísticas...</div>
+    </section>
+  </div>
+
+  <script>
+    async function uploadFiles() {
+      const input = document.getElementById('fileInput');
+      const status = document.getElementById('uploadStatus');
+      if (!input.files.length) {
+        status.textContent = 'Selecione pelo menos um arquivo.';
+        return;
+      }
+      status.textContent = 'Enviando...';
+      const formData = new FormData();
+      for (const file of input.files) {
+        formData.append('files', file);
+      }
+      try {
+        const response = await fetch('/api/documentos/route', {
+          method: 'POST',
+          body: formData,
+        });
+        if (response.ok) {
+          status.textContent = 'Arquivos enviados com sucesso!';
+          input.value = '';
+        } else {
+          status.textContent = 'Erro ao enviar arquivos.';
+        }
+      } catch (error) {
+        status.textContent = 'Erro na requisição: ' + error.message;
+      }
+    }
+
+    async function syncGoogleSheets() {
+      const status = document.getElementById('syncStatus');
+      status.textContent = 'Sincronizando...';
+      try {
+        const response = await fetch('/api/googleSheets/sync/route');
+        if (response.ok) {
+          status.textContent = 'Sincronização concluída com sucesso!';
+        } else {
+          status.textContent = 'Erro na sincronização.';
+        }
+      } catch (error) {
+        status.textContent = 'Erro na requisição: ' + error.message;
+      }
+    }
+
+    async function loadDashboardStats() {
+      const container = document.getElementById('dashboardStats');
+      try {
+        const response = await fetch('/api/dashboard/stats/route');
+        if (response.ok) {
+          const data = await response.json();
+          container.innerHTML = `
+            <p>Total Transportadoras: ${data.transportadorasCount}</p>
+            <p>Total Documentos: ${data.documentosCount}</p>
+            <p>Total Usuários: ${data.usuariosCount}</p>
+          `;
+        } else {
+          container.textContent = 'Erro ao carregar estatísticas.';
+        }
+      } catch (error) {
+        container.textContent = 'Erro na requisição: ' + error.message;
+      }
+    }
+
+    loadDashboardStats();
+  </script>
+</body>
+</html>
